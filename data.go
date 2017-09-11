@@ -196,9 +196,10 @@ func ParseOptions(str string) Options {
 // Request is an imageproxy request which includes a remote URL of an image to
 // proxy, and an optional set of transformations to perform.
 type Request struct {
-	URL      *url.URL      // URL of the image to proxy
-	Options  Options       // Image transformation to perform
-	Original *http.Request // The original HTTP request
+	URL       *url.URL      // URL of the image to proxy
+	URLToSign string        // The raw URL of the image to proxy
+	Options   Options       // Image transformation to perform
+	Original  *http.Request // The original HTTP request
 }
 
 // String returns the request URL as a string, with r.Options encoded in the
@@ -229,10 +230,15 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 	path := r.URL.Path[1:] // strip leading slash
 	req.URL, err = url.ParseRequestURI(path)
 
+	rawPath := r.URL.RawPath[1:] // raw path is used for signing
+
 	if err != nil || !req.URL.IsAbs() {
+
 		// first segment should be options
 		parts := strings.SplitN(path, "/", 2)
-		if len(parts) != 2 {
+		rawParts := strings.SplitN(rawPath, "/", 2)
+
+		if len(parts) != 2 || len(rawParts) != 2 {
 			return nil, URLError{"too few path segments", r.URL}
 		}
 
@@ -241,6 +247,9 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 		if err != nil {
 			return nil, URLError{fmt.Sprintf("unable to parse remote URL: %v", err), r.URL}
 		}
+
+		//URLToSign without decode
+		req.URLToSign = rawParts[1]
 
 		req.Options = ParseOptions(parts[0])
 	}
