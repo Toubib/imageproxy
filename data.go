@@ -230,15 +230,33 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 	path := r.URL.Path[1:] // strip leading slash
 	req.URL, err = url.ParseRequestURI(path)
 
-	rawPath := r.URL.RawPath[1:] // raw path is used for signing
-
+	//there is options
 	if err != nil || !req.URL.IsAbs() {
 
 		// first segment should be options
 		parts := strings.SplitN(path, "/", 2)
+
+		//set req.URLToSign
+		var rawPath string
+
+		// check if RawPath is defined
+		if len(r.URL.RawPath) == 0 {
+			rawPath = r.URL.EscapedPath()[1:]
+		} else {
+			//try to use RawPath to get original url
+			rawPath = r.URL.RawPath[1:] // raw path is used for signing
+		}
+
 		rawParts := strings.SplitN(rawPath, "/", 2)
 
-		if len(parts) != 2 || len(rawParts) != 2 {
+		if len(rawParts) != 2 {
+			return nil, URLError{"too few raw path segments", r.URL}
+		}
+
+		//URLToSign without decode
+		req.URLToSign = rawParts[1]
+
+		if len(parts) != 2 {
 			return nil, URLError{"too few path segments", r.URL}
 		}
 
@@ -248,11 +266,10 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 			return nil, URLError{fmt.Sprintf("unable to parse remote URL: %v", err), r.URL}
 		}
 
-		//URLToSign without decode
-		req.URLToSign = rawParts[1]
-
 		req.Options = ParseOptions(parts[0])
 	}
+
+	//WARN req.URLToSign is only set for url with options
 
 	if baseURL != nil {
 		req.URL = baseURL.ResolveReference(req.URL)
