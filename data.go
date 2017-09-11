@@ -227,7 +227,8 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 	req := &Request{Original: r}
 
 	path := r.URL.Path[1:] // strip leading slash
-	req.URL, err = url.Parse(path)
+	req.URL, err = url.ParseRequestURI(path)
+
 	if err != nil || !req.URL.IsAbs() {
 		// first segment should be options
 		parts := strings.SplitN(path, "/", 2)
@@ -236,7 +237,7 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 		}
 
 		var err error
-		req.URL, err = url.Parse(parts[1])
+		req.URL, err = url.ParseRequestURI(parts[1])
 		if err != nil {
 			return nil, URLError{fmt.Sprintf("unable to parse remote URL: %v", err), r.URL}
 		}
