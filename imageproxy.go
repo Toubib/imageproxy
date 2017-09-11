@@ -181,6 +181,10 @@ func (p *Proxy) allowed(r *Request) bool {
 		if validSignature(p.SignatureKey, r) {
 			return true
 		}
+		if validSignatureAlphaNum(p.SignatureKey, r) {
+			return true
+		}
+
 		glog.Infof("request contains invalid signature: %v", r)
 	}
 
@@ -235,8 +239,39 @@ func validSignature(key []byte, r *Request) bool {
 		return false
 	}
 
+	unescapedUrl, err := url.QueryUnescape(r.URL.String())
+	if err != nil {
+		glog.Errorf("error Unescape Query %q", r.URL.String())
+		return false
+	}
+
 	mac := hmac.New(sha256.New, key)
-	mac.Write([]byte(r.URL.String()))
+	mac.Write([]byte(unescapedUrl))
+	want := mac.Sum(nil)
+
+	return hmac.Equal(got, want)
+}
+
+// validSignature returns whether the request signature is valid,
+// using only alphanum chars from the target raw url
+func validSignatureAlphaNum(key []byte, r *Request) bool {
+	sig := r.Options.Signature
+	if m := len(sig) % 4; m != 0 { // add padding if missing
+		sig += strings.Repeat("=", 4-m)
+	}
+
+	got, err := base64.URLEncoding.DecodeString(sig)
+	if err != nil {
+		glog.Errorf("error base64 decoding signature %q", r.Options.Signature)
+		return false
+	}
+
+	//use only alpha num chars
+	reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
+	urlToSign := reg.ReplaceAllString(r.URLToSign, "")
+
+	mac := hmac.New(sha256.New, key)
+	mac.Write([]byte(urlToSign))
 	want := mac.Sum(nil)
 
 	return hmac.Equal(got, want)
