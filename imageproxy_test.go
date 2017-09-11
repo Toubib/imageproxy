@@ -18,7 +18,7 @@ import (
 
 func TestAllowed(t *testing.T) {
 	whitelist := []string{"good"}
-	filetypes := []string{"png","jpg"}
+	filetypes := []string{"png", "jpg"}
 	key := []byte("c0ffee")
 
 	genRequest := func(headers map[string]string) *http.Request {
@@ -78,7 +78,7 @@ func TestAllowed(t *testing.T) {
 		if err != nil {
 			t.Errorf("error parsing url %q: %v", tt.url, err)
 		}
-		req := &Request{u, tt.options, tt.request}
+		req := &Request{u, tt.url, tt.options, tt.request}
 		if got, want := p.allowed(req), tt.allowed; got != want {
 			t.Errorf("allowed(%q) returned %v, want %v.\nTest struct: %#v", req, got, want, tt)
 		}
@@ -133,7 +133,7 @@ func TestValidSignature(t *testing.T) {
 		if err != nil {
 			t.Errorf("error parsing url %q: %v", tt.url, err)
 		}
-		req := &Request{u, tt.options, &http.Request{}}
+		req := &Request{u, tt.url, tt.options, &http.Request{}}
 		if got, want := validSignature(key, req), tt.valid; got != want {
 			t.Errorf("validSignature(%v, %q) returned %v, want %v", key, u, got, want)
 		}
