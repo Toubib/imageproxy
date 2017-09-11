@@ -141,6 +141,14 @@ func TestNewRequest(t *testing.T) {
 			"http://localhost//http://example.com/foo?bar",
 			"http://example.com/foo?bar", emptyOptions, false,
 		},
+		{
+			"http://localhost/1x2/http://example.com/foo.jpg%253Fw%253D800",
+			"http://example.com/foo.jpg%3Fw%3D800", Options{Width: 1, Height: 2}, false,
+		},
+		{
+			"http://localhost/1x2/http://example.com/182_1%2523182_1%23PRES%23PRES.jpg",
+			"http://example.com/182_1%23182_1%23PRES%23PRES.jpg", Options{Width: 1, Height: 2}, false,
+		},
 	}
 
 	for _, tt := range tests {
