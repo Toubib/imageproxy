@@ -22,16 +22,17 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
-	"github.com/sitano/glog"
 	"github.com/gregjones/httpcache"
 	"github.com/gregjones/httpcache/diskcache"
 	"github.com/peterbourgon/diskv"
-	"willnorris.com/go/imageproxy"
+	"github.com/sitano/glog"
+	//"willnorris.com/go/imageproxy"
+	"github.com/Toubib/imageproxy"
 )
 
 // goxc values
