@@ -240,7 +240,6 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 			return nil, URLError{"too few path segments", r.URL}
 		}
 
-		//TODO Remove this
 		req.URLToSign = parts[1]
 
 		var err error
@@ -266,7 +265,9 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 		return nil, URLError{"remote URL must have http or https scheme", r.URL}
 	}
 
-	// query string is always part of the remote URL
-	req.URL.RawQuery = r.URL.RawQuery
+	// recover query string from original query if needed
+	if req.URL.RawQuery == "" {
+		req.URL.RawQuery = r.URL.RawQuery
+	}
 	return req, nil
 }
