@@ -236,12 +236,12 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 		// first segment should be options
 		parts := strings.SplitN(path, "/", 2)
 
-		//TODO Remove this
-		req.URLToSign = parts[1]
-
 		if len(parts) != 2 {
 			return nil, URLError{"too few path segments", r.URL}
 		}
+
+		//TODO Remove this
+		req.URLToSign = parts[1]
 
 		var err error
 		req.URL, err = url.ParseRequestURI(parts[1])
