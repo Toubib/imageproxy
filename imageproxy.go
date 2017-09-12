@@ -267,12 +267,17 @@ func validSignatureAlphaNum(key []byte, r *Request) bool {
 	}
 
 	//use only alpha num chars
-	reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
-	urlToSign := reg.ReplaceAllString(r.URLToSign, "")
+	var urlToSign string
+	reg1, _ := regexp.Compile("%[A-Za-z0-9]{2}")
+	reg2, _ := regexp.Compile("[^a-zA-Z0-9]+")
+	urlToSign = reg1.ReplaceAllString(r.URLToSign, "")
+	urlToSign = reg2.ReplaceAllString(urlToSign, "")
 
 	mac := hmac.New(sha256.New, key)
 	mac.Write([]byte(urlToSign))
 	want := mac.Sum(nil)
+
+	glog.Infof("Sig2: %s from %s\n", base64.URLEncoding.EncodeToString(want), urlToSign)
 
 	return hmac.Equal(got, want)
 }

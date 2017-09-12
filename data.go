@@ -236,25 +236,8 @@ func NewRequest(r *http.Request, baseURL *url.URL) (*Request, error) {
 		// first segment should be options
 		parts := strings.SplitN(path, "/", 2)
 
-		//set req.URLToSign
-		var rawPath string
-
-		// check if RawPath is defined
-		if len(r.URL.RawPath) == 0 {
-			rawPath = r.URL.EscapedPath()[1:]
-		} else {
-			//try to use RawPath to get original url
-			rawPath = r.URL.RawPath[1:] // raw path is used for signing
-		}
-
-		rawParts := strings.SplitN(rawPath, "/", 2)
-
-		if len(rawParts) != 2 {
-			return nil, URLError{"too few raw path segments", r.URL}
-		}
-
-		//URLToSign without decode
-		req.URLToSign = rawParts[1]
+		//TODO Remove this
+		req.URLToSign = parts[1]
 
 		if len(parts) != 2 {
 			return nil, URLError{"too few path segments", r.URL}
